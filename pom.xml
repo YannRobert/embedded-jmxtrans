@@ -166,6 +166,12 @@
     </reporting>
     <dependencies>
         <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.4</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <!-- Used by the org.jmxtrans.embedded.output.CsvWriter -->
             <groupId>net.sf.supercsv</groupId>
             <artifactId>super-csv</artifactId>

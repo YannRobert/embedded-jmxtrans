@@ -41,6 +41,7 @@ public class EmbeddedJmxTransBeanDefinitionParser extends AbstractSingleBeanDefi
     private static final String CONFIGURATION_ATTRIBUTE = "configuration";
     private static final String CONFIGURATION_SCAN_PERIOD_IN_SECONDS = "configuration-scan-period-in-seconds";
     private static final String IGNORE_CONFIGURATION_NOT_FOUND_ATTRIBUTE = "ignore-configuration-not-found";
+    private static final String AUTO_CONFIGURATION_ATTRIBUTE = "automaticConfiguration";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -67,6 +68,13 @@ public class EmbeddedJmxTransBeanDefinitionParser extends AbstractSingleBeanDefi
         if (element.hasAttribute(IGNORE_CONFIGURATION_NOT_FOUND_ATTRIBUTE)) {
             builder.addPropertyValue("ignoreConfigurationNotFound", element.getAttribute(IGNORE_CONFIGURATION_NOT_FOUND_ATTRIBUTE));
         }
+
+        if (element.hasAttribute(AUTO_CONFIGURATION_ATTRIBUTE)) {
+            String autoConfigurationAttributeValue = element.getAttribute(AUTO_CONFIGURATION_ATTRIBUTE);
+            builder.addPropertyValue("automaticConfiguration", autoConfigurationAttributeValue);
+            logger.debug("Add automaticConfiguration from attribute {}", autoConfigurationAttributeValue);
+        }
+
         List<String> configurationUrls = new ArrayList<String>();
         if (element.hasAttribute(CONFIGURATION_ATTRIBUTE)) {
             String configurationUrl = element.getAttribute(CONFIGURATION_ATTRIBUTE);
