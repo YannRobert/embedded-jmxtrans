@@ -24,6 +24,10 @@
 package org.jmxtrans.embedded.spring;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.lang.management.ManagementFactory;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,9 +35,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.IOUtils;
 import org.jmxtrans.embedded.EmbeddedJmxTrans;
 import org.jmxtrans.embedded.EmbeddedJmxTransException;
 import org.jmxtrans.embedded.config.ConfigurationParser;
+import org.jmxtrans.embedded.discovery.AutomaticDiscoveryConfigGenerator;
+import org.jmxtrans.embedded.discovery.ConfigJsonSerializer;
+import org.jmxtrans.embedded.discovery.ConfigModel;
 import org.jmxtrans.embedded.util.concurrent.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +77,8 @@ public class EmbeddedJmxTransFactory implements FactoryBean<SpringEmbeddedJmxTra
     private ResourceLoader resourceLoader;
 
     private boolean ignoreConfigurationNotFound = false;
+
+    private boolean automaticConfiguration = false;
 
     private String beanName = "jmxtrans";
 
@@ -185,6 +195,42 @@ public class EmbeddedJmxTransFactory implements FactoryBean<SpringEmbeddedJmxTra
                 configurationUrls = Collections.singletonList(DEFAULT_CONFIGURATION_URL);
             }
 
+            if (automaticConfiguration) {
+                Thread delayedAutomaticConfigurationDiscoveryThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // when the Spring Application Context is just started, the @ManagedResources bean are not yet registered with the MBean Server
+                        // so we have to sleep a little while before running the discovery
+                        try {
+                            TimeUnit.SECONDS.sleep(15);
+                        } catch (InterruptedException e) {
+                            logger.error("InterruptedException while automatically discovering a configuration from the MBean Server", e);
+                            throw new RuntimeException(e);
+                        }
+                        AutomaticDiscoveryConfigGenerator automaticDiscoveryConfigGenerator = new AutomaticDiscoveryConfigGenerator(ManagementFactory.getPlatformMBeanServer());
+                        ConfigModel.Config autoConfig;
+                        try {
+                            autoConfig = automaticDiscoveryConfigGenerator.autoDiscovery();
+                        } catch (Exception e) {
+                            logger.error("Exception while automatically discovering a configuration from the MBean Server", e);
+                            throw new RuntimeException(e);
+                        }
+                        ConfigJsonSerializer configJsonSerializer = new ConfigJsonSerializer();
+                        PrintWriter autoConfigOutputWriter = null;
+                        try {
+                            autoConfigOutputWriter = new PrintWriter(new OutputStreamWriter(System.out, Charset.forName("UTF-8")));
+                            configJsonSerializer.serializeConfig(autoConfig, autoConfigOutputWriter);
+                        } catch (IOException e) {
+                            logger.error("Exception while serializing the Config object", e);
+                            throw new RuntimeException(e);
+                        } finally {
+                            IOUtils.closeQuietly(autoConfigOutputWriter);
+                        }
+                    }
+                });
+                delayedAutomaticConfigurationDiscoveryThread.start();
+            }
+
             SpringEmbeddedJmxTrans newJmxTrans = new SpringEmbeddedJmxTrans();
             newJmxTrans.setObjectName("org.jmxtrans.embedded:type=EmbeddedJmxTrans,name=" + beanName);
 
@@ -273,6 +319,10 @@ public class EmbeddedJmxTransFactory implements FactoryBean<SpringEmbeddedJmxTra
 
     public void setIgnoreConfigurationNotFound(boolean ignoreConfigurationNotFound) {
         this.ignoreConfigurationNotFound = ignoreConfigurationNotFound;
+    }
+
+    public void setAutomaticConfiguration(boolean automaticConfiguration) {
+        this.automaticConfiguration = automaticConfiguration;
     }
 
     @Override
