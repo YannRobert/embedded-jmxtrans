@@ -1,26 +1,30 @@
 package org.jmxtrans.embedded.util.ssl;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.http.ssl.TrustStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-@Slf4j
 public class LoggingTrustStrategy implements TrustStrategy {
 
     private static final CertificateLoggingHelper certificateLoggingHelper = new CertificateLoggingHelper();
+
+    private static final Logger logger = LoggerFactory.getLogger(LoggingTrustStrategy.class);
 
     private final TrustStrategy delegate;
 
     public LoggingTrustStrategy(TrustStrategy delegate) {
         super();
         this.delegate = delegate;
-        log.info("New instance created : " + getClass().getSimpleName());
     }
 
     @Override
     public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+        if (!logger.isInfoEnabled()) {
+            return delegate.isTrusted(chain, authType);
+        }
         StringBuilder logBuilder = new StringBuilder();
         logBuilder.append("isTrusted() : ");
         logBuilder.append("authType = ").append(authType);
@@ -46,8 +50,9 @@ public class LoggingTrustStrategy implements TrustStrategy {
             trusted = delegate.isTrusted(chain, authType);
             return trusted;
         } finally {
+            logBuilder.append(" : trustStrategy = ").append(delegate).append(", ");
             logBuilder.append(" : result : trusted = ").append(trusted);
-            log.info(logBuilder.toString());
+            logger.info(logBuilder.toString());
         }
     }
 
