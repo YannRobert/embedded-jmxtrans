@@ -38,7 +38,7 @@ import org.jmxtrans.embedded.util.socket.SocketFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -66,6 +66,8 @@ import java.util.concurrent.TimeUnit;
 public class GraphiteWriter extends AbstractOutputWriter implements OutputWriter {
 
     public static final int DEFAULT_GRAPHITE_SERVER_PORT = 2003;
+
+    private static final Charset UTF_8 = Charset.forName("UTF-8");
 
     private static final String PROTOCOL_TCP = "TCP";
     private static final String PROTOCOL_UDP = "UDP";
@@ -121,7 +123,7 @@ public class GraphiteWriter extends AbstractOutputWriter implements OutputWriter
             protocol = PROTOCOL_TCP;
         }
         if (protocol.equalsIgnoreCase(PROTOCOL_UDP)) {
-            return new UDPSocketWriterPoolFactory(StandardCharsets.UTF_8);
+            return new UDPSocketWriterPoolFactory(UTF_8);
         }
         if (!protocol.equalsIgnoreCase(PROTOCOL_TCP)) {
             // unknown protocol, use default one
@@ -160,7 +162,7 @@ public class GraphiteWriter extends AbstractOutputWriter implements OutputWriter
 
         logger.info("socketFactory = {}", socketFactory);
 
-        return new SocketWriterPoolFactory(StandardCharsets.UTF_8, socketConnectTimeoutInMillis, socketFactory);
+        return new SocketWriterPoolFactory(UTF_8, socketConnectTimeoutInMillis, socketFactory);
 
     }
 
