@@ -30,10 +30,7 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.jmxtrans.embedded.util.net.HostAndPort;
 import org.jmxtrans.embedded.util.net.SocketWriter;
 import org.jmxtrans.embedded.util.socket.SocketFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.Socket;
 import java.nio.charset.Charset;
 
@@ -45,9 +42,6 @@ import java.nio.charset.Charset;
 public class SocketWriterPoolFactory extends BaseKeyedPooledObjectFactory<HostAndPort, SocketWriter> implements KeyedPooledObjectFactory<HostAndPort, SocketWriter> {
 
     public static final int DEFAULT_SOCKET_CONNECT_TIMEOUT_IN_MILLIS = 500;
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
     private final Charset charset;
     private final int socketConnectTimeoutInMillis;
     private final SocketFactory socketFactory;
@@ -67,22 +61,10 @@ public class SocketWriterPoolFactory extends BaseKeyedPooledObjectFactory<HostAn
 
     @Override
     public void destroyObject(HostAndPort hostAndPort, PooledObject<SocketWriter> socketWriterRef) throws Exception {
+        super.destroyObject(hostAndPort, socketWriterRef);
         SocketWriter socketWriter = socketWriterRef.getObject();
-        if (socketWriter != null) {
-            try {
-                socketWriter.close();
-            } catch (IOException e) {
-                logger.info("IOException while closing the SocketWriter to {}", hostAndPort);
-            }
-            Socket socket = socketWriter.getSocket();
-            if (socket != null) {
-                try {
-                    socket.close();
-                } catch (IOException e) {
-                    logger.info("IOException while closing the Socket to {}", hostAndPort);
-                }
-            }
-        }
+        socketWriter.close();
+        socketWriter.getSocket().close();
     }
 
     @Override
@@ -92,31 +74,14 @@ public class SocketWriterPoolFactory extends BaseKeyedPooledObjectFactory<HostAn
 
     /**
      * Defensive approach: we test all the "<code>Socket.isXXX()</code>" flags.
-     * We also send a empty line in order to test the actual connection not broken
      */
     @Override
     public boolean validateObject(HostAndPort hostAndPort, PooledObject<SocketWriter> socketWriterRef) {
-        SocketWriter socketWriter = socketWriterRef.getObject();
-        Socket socket = socketWriter.getSocket();
-        boolean internalStateCorrect = socket.isConnected()
+        Socket socket = socketWriterRef.getObject().getSocket();
+        return socket.isConnected()
                 && socket.isBound()
                 && !socket.isClosed()
                 && !socket.isInputShutdown()
                 && !socket.isOutputShutdown();
-        if (internalStateCorrect) {
-            try {
-                // sends an empty line in order to really test the connection is still up
-                // this will prevent the Pool from lending a Socket that is already broken
-                socketWriter.write("\n");
-                socketWriter.flush();
-                return true;
-            } catch (IOException e) {
-                logger.info("IOException while validating the SocketWriter to {}", hostAndPort, e);
-                return false;
-            }
-        } else {
-            logger.info("State is invalid for Socket to {}", hostAndPort);
-            return false;
-        }
     }
 }
