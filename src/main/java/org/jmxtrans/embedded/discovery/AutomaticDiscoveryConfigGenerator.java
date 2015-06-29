@@ -78,18 +78,24 @@ public class AutomaticDiscoveryConfigGenerator {
                     // most of the times, it is manageable attributes intended to be set by operations guys
                     // most of the times, manageable attributes that serves as system metrics are read-only
                 } else {
-                    if (attributeTypeInclusionStrategy.shouldIncludeAttributeType(attributeInfo.getType())) {
-                        log.debug("attributeInfo.getType() = " + attributeInfo.getType());
-                        attributes.add(attributeInfo.getName());
-                    }
-                    if (attributeInfo.getType().equals("javax.management.openmbean.CompositeData")) {
-                        CompositeData cd = (CompositeData) mbeanServer.getAttribute(objectName, attributeInfo.getName());
-                        if (cd != null) {
-                            ConfigModel.CompositeAttribute compositeAttribute = new ConfigModel.CompositeAttribute();
-                            compositeAttribute.setName(attributeInfo.getName());
-                            CompositeType compositeType = cd.getCompositeType();
-                            compositeAttribute.setKeys(compositeType.keySet());
-                            attributes.add(compositeAttribute);
+                    final String attributeType = attributeInfo.getType();
+                    if (attributeType == null) {
+                        // nothing to do
+                        log.warn("attributeType is null for {}", objectCanonicalName);
+                    } else {
+                        log.debug("attributeType = {} for {}", attributeType, objectCanonicalName);
+                        if (attributeTypeInclusionStrategy.shouldIncludeAttributeType(attributeType)) {
+                            attributes.add(attributeInfo.getName());
+                        }
+                        if (attributeType.equals("javax.management.openmbean.CompositeData")) {
+                            CompositeData cd = (CompositeData) mbeanServer.getAttribute(objectName, attributeInfo.getName());
+                            if (cd != null) {
+                                ConfigModel.CompositeAttribute compositeAttribute = new ConfigModel.CompositeAttribute();
+                                compositeAttribute.setName(attributeInfo.getName());
+                                CompositeType compositeType = cd.getCompositeType();
+                                compositeAttribute.setKeys(compositeType.keySet());
+                                attributes.add(compositeAttribute);
+                            }
                         }
                     }
                 }
