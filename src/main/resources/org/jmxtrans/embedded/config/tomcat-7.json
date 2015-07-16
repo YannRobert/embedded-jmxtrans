@@ -1,8 +1,17 @@
 {
     "queries": [
         {
-            "objectName": "Catalina:type=ThreadPool,name=*",
-            "resultAlias": "tomcat.thread-pool.%name%",
+            "objectName": "Catalina:type=ThreadPool,name=http-nio-*",
+            "resultAlias": "tomcat.thread-pool.http-nio",
+            "attributes": [
+                "currentThreadCount",
+                "currentThreadsBusy"
+            ]
+
+        },
+        {
+            "objectName": "Catalina:type=ThreadPool,name=ajp-nio-*",
+            "resultAlias": "tomcat.thread-pool.ajp-nio",
             "attributes": [
                 "currentThreadCount",
                 "currentThreadsBusy"

@@ -1,8 +1,17 @@
 {
     "queries": [
         {
-            "objectName": "localEngine:type=ThreadPool,name=*",
-            "resultAlias": "tomcat.thread-pool.%name%",
+            "objectName": "localEngine:type=ThreadPool,name=http-nio-*",
+            "resultAlias": "tomcat.thread-pool.http-nio",
+            "attributes": [
+                "currentThreadCount",
+                "currentThreadsBusy"
+            ]
+
+        },
+        {
+            "objectName": "localEngine:type=ThreadPool,name=ajp-nio-*",
+            "resultAlias": "tomcat.thread-pool.ajp-nio",
             "attributes": [
                 "currentThreadCount",
                 "currentThreadsBusy"
