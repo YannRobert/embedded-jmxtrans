@@ -26,8 +26,20 @@
             ]
         },
         {
-            "objectName": "localEngine:type=GlobalRequestProcessor,name=*",
-            "resultAlias": "tomcat.global-request-processor.%name%",
+            "objectName": "localEngine:type=GlobalRequestProcessor,name=http-nio-*",
+            "resultAlias": "tomcat.global-request-processor.http-nio",
+            "attributes": [
+                "bytesReceived",
+                "bytesSent",
+                "errorCount",
+                "processingTime",
+                "requestCount"
+
+            ]
+        },
+        {
+            "objectName": "localEngine:type=GlobalRequestProcessor,name=ajp-nio-*",
+            "resultAlias": "tomcat.global-request-processor.ajp-nio",
             "attributes": [
                 "bytesReceived",
                 "bytesSent",
