@@ -1,7 +1,7 @@
 {
     "queries": [
         {
-            "objectName": "Catalina:type=ThreadPool,name=http-nio-*",
+            "objectName": "Catalina:type=ThreadPool,name=\"http-nio-*\"",
             "resultAlias": "tomcat.thread-pool.http-nio",
             "attributes": [
                 "currentThreadCount",
@@ -10,7 +10,7 @@
 
         },
         {
-            "objectName": "Catalina:type=ThreadPool,name=ajp-nio-*",
+            "objectName": "Catalina:type=ThreadPool,name=\"ajp-nio-*\"",
             "resultAlias": "tomcat.thread-pool.ajp-nio",
             "attributes": [
                 "currentThreadCount",
@@ -26,7 +26,7 @@
             ]
         },
         {
-            "objectName": "Catalina:type=GlobalRequestProcessor,name=http-nio-*",
+            "objectName": "Catalina:type=GlobalRequestProcessor,name=\"http-nio-*\"",
             "resultAlias": "tomcat.global-request-processor.http-nio",
             "attributes": [
                 "bytesReceived",
@@ -38,7 +38,7 @@
             ]
         },
         {
-            "objectName": "Catalina:type=GlobalRequestProcessor,name=ajp-nio-*",
+            "objectName": "Catalina:type=GlobalRequestProcessor,name=\"ajp-nio-*\"",
             "resultAlias": "tomcat.global-request-processor.ajp-nio",
             "attributes": [
                 "bytesReceived",
