@@ -203,7 +203,7 @@ public class GraphiteWriter extends AbstractOutputWriter implements OutputWriter
             socketWriterPool.returnObject(graphiteServerHostAndPort, socketWriter);
         } catch (Exception e) {
             final String errorMessage = String.format("Failure to send result to graphite server %s with %s", graphiteServerHostAndPort, socketWriter);
-            logger.warn(errorMessage, e);
+            // no need to print a warning here, because the error message is already contained in the Exception, and will be printed by the caller  
             if (socketWriter != null) {
                 try {
                     socketWriterPool.invalidateObject(graphiteServerHostAndPort, socketWriter);
